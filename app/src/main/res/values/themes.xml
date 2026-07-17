@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.UniversalWebView" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Hides default Android window UI decorations -->
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
-        
-        <!-- Native Immersive Mode Settings (Removes status bar completely) -->
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
+        
+        <!-- Pushes the app background color completely into the notch/status bar area -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
     </style>
 </resources>
