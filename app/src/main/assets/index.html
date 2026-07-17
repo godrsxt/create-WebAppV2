@@ -2,67 +2,286 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport configuration strictly locking the layout boundaries -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Native App Interface</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Project to ZIP Builder (v2)</title>
+    <!-- Include JSZip library from CDN for client-side ZIP generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        /* Immersive layout reset structure */
-        html, body {
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #007bff;
+            --primary-hover: #0056b3;
+            --border: #e0e0e0;
+            --success: #28a745;
+            --error: #dc3545;
+        }
+        
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;         /* Kill native text layout scrolling mechanics */
-            background-color: #121212; /* Fallback system canvas coloration */
-            color: #ffffff;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            
-            /* Disable standard mobile browser touch interactions */
-            touch-action: none;          /* Block pull-to-refresh & multi-touch pinch behaviors */
-            -webkit-user-select: none;   /* Block selection overlays / long-press copying */
-            user-select: none;
-            -webkit-touch-callout: none; /* Block context menu callout alerts on link holding */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Root interactive game canvas or viewport container wrapper */
-        #viewport-wrapper {
-            width: 100vw;
-            height: 100vh;
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 2rem;
             display: flex;
             justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            box-sizing: border-box;
-            padding: 20px;
         }
 
-        .action-button {
-            padding: 16px 32px;
-            font-size: 18px;
-            font-weight: bold;
-            background-color: #00e676;
-            color: #000000;
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .instructions {
+            background-color: #e9f5ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .instructions code {
+            background-color: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        textarea {
+            width: 100%;
+            height: 350px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            margin-bottom: 1rem;
+            white-space: pre;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
             border: none;
-            border-radius: 50px;
-            box-shadow: 0 4px 14px rgba(0, 230, 118, 0.4);
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        #logArea {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid var(--border);
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .log-item {
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .success-text {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .error-text {
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        .file-icon {
+            margin-right: 8px;
         }
     </style>
 </head>
 <body>
 
-    <div id="viewport-wrapper">
-        <h2>Version 2: Fully Native Sandbox</h2>
-        <p>No scroll boundaries, zero bounce effects, and clean touch processing.</p>
-        <br>
-        <button class="action-button" id="triggerBtn">Test Interaction</button>
+    <div class="container">
+        <h1>📦 AI Project to ZIP Builder (v2)</h1>
+        <p class="subtitle">Paste your project code. It will automatically detect the project name, group all files in a root folder, and name the ZIP accordingly.</p>
+        
+        <div class="instructions">
+            <strong>Supported Syntax:</strong><br>
+            • Set project name: <code>@PROJECT: ProjectName</code><br>
+            • Define a file: <code>[FILE: path/file.ext]</code> ...code... <code>[/FILE]</code><br>
+            • Close project (optional): <code>@ENDPROJECT</code>
+        </div>
+
+        <textarea id="inputText" placeholder="@PROJECT: AndroidChatBot&#10;&#10;[FILE: app/build.gradle]&#10;plugins {&#10;    id 'com.android.application'&#10;}&#10;[/FILE]&#10;&#10;@ENDPROJECT"></textarea>
+        
+        <button class="btn" id="generateBtn" onclick="generateZIP()">
+            <span style="margin-right: 8px;">⬇️</span> Generate & Download ZIP
+        </button>
+
+        <div id="logArea">
+            <h3 style="margin-bottom: 10px; font-size: 1rem;">Extraction Log</h3>
+            <div id="logContent"></div>
+        </div>
     </div>
 
     <script>
-        document.getElementById('triggerBtn').addEventListener('click', () => {
-            alert("Touch events processing within immersive frame parameters.");
-        });
+        async function generateZIP() {
+            const text = document.getElementById('inputText').value;
+            const logArea = document.getElementById('logArea');
+            const logContent = document.getElementById('logContent');
+            const btn = document.getElementById('generateBtn');
+            
+            // Reset UI
+            logContent.innerHTML = '';
+            logArea.style.display = 'block';
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Generating...';
+
+            if (!text.trim()) {
+                showError("Please paste some text first.");
+                resetBtn();
+                return;
+            }
+
+            // 1. Detect Project Name
+            let projectName = "Extracted_Project"; // Default fallback
+            const projectRegex = /@PROJECT:\s*([^\r\n]+)/i;
+            const projectMatch = text.match(projectRegex);
+            
+            if (projectMatch && projectMatch[1]) {
+                projectName = projectMatch[1].trim();
+                // Sanitize folder/zip name to remove invalid OS characters
+                projectName = projectName.replace(/[\\/:*?"<>|]/g, "_");
+            }
+            
+            // Log the detected project name
+            const projLog = document.createElement('div');
+            projLog.className = 'log-item';
+            projLog.innerHTML = `<span class="file-icon">📁</span> Project Root: <strong>${projectName}/</strong>`;
+            logContent.appendChild(projLog);
+
+            // 2. Extract Files
+            const regex = /\[FILE:\s*(.+?)\]([\s\S]*?)\[\/FILE\]/g;
+            let match;
+            let count = 0;
+            
+            // Initialize JSZip
+            const zip = new JSZip();
+
+            while ((match = regex.exec(text)) !== null) {
+                // Prepend the project name to the file path so everything is in a root folder
+                const originalPath = match[1].trim();
+                const filePath = `${projectName}/${originalPath}`;
+                
+                let fileContent = match[2];
+
+                // Clean up leading/trailing empty lines
+                fileContent = fileContent.replace(/^\s*[\r\n]/, '').replace(/[\r\n]\s*$/, '');
+                
+                // Add to ZIP
+                zip.file(filePath, fileContent);
+                
+                // Add to log
+                const logItem = document.createElement('div');
+                logItem.className = 'log-item';
+                logItem.innerHTML = `<span class="file-icon">📄</span> Added: <strong>${filePath}</strong>`;
+                logContent.appendChild(logItem);
+                
+                count++;
+            }
+
+            if (count === 0) {
+                showError("No files found! Make sure you used the [FILE: path/filename] and [/FILE] tags correctly.");
+                resetBtn();
+                return;
+            }
+
+            // Show success summary
+            const summary = document.createElement('div');
+            summary.className = 'log-item success-text';
+            summary.style.marginTop = '10px';
+            summary.innerHTML = `✅ Successfully packed ${count} file(s) into ${projectName}.zip.`;
+            logContent.appendChild(summary);
+
+            try {
+                // Generate ZIP file as a Blob
+                const content = await zip.generateAsync({ type: "blob" });
+                
+                // Trigger download
+                const url = window.URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `${projectName}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (err) {
+                showError("Error generating ZIP: " + err.message);
+            }
+
+            resetBtn();
+        }
+
+        function showError(message) {
+            const logContent = document.getElementById('logContent');
+            logContent.innerHTML += `<div class="log-item error-text">⚠️ ${message}</div>`;
+        }
+
+        function resetBtn() {
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = false;
+            btn.innerHTML = '<span style="margin-right: 8px;">⬇️</span> Generate & Download ZIP';
+        }
     </script>
-    
 </body>
 </html>
