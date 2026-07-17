@@ -7,10 +7,10 @@
 
     <!-- ========================================================================= -->
     <!-- UNIVERSAL PERMISSIONS TEMPLATE                                            -->
-    <!-- Remove "<!--" and "-->" to activate a required hardware or system feature.-->
+    <!-- Delete the comment arrows at the start and end of a line to activate it   -->
     <!-- ========================================================================= -->
-    <!-- <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" /> -->
-    <!-- <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" /> -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <!-- <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> -->
     <!-- <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> -->
     <!-- <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" /> -->
