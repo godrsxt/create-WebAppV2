@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport configuration strictly locking the layout boundaries -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Native App Interface</title>
+    <style>
+        /* Immersive layout reset structure */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;         /* Kill native text layout scrolling mechanics */
+            background-color: #121212; /* Fallback system canvas coloration */
+            color: #ffffff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            
+            /* Disable standard mobile browser touch interactions */
+            touch-action: none;          /* Block pull-to-refresh & multi-touch pinch behaviors */
+            -webkit-user-select: none;   /* Block selection overlays / long-press copying */
+            user-select: none;
+            -webkit-touch-callout: none; /* Block context menu callout alerts on link holding */
+        }
+
+        /* Root interactive game canvas or viewport container wrapper */
+        #viewport-wrapper {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        .action-button {
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #00e676;
+            color: #000000;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 14px rgba(0, 230, 118, 0.4);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="viewport-wrapper">
+        <h2>Version 2: Fully Native Sandbox</h2>
+        <p>No scroll boundaries, zero bounce effects, and clean touch processing.</p>
+        <br>
+        <button class="action-button" id="triggerBtn">Test Interaction</button>
+    </div>
+
+    <script>
+        document.getElementById('triggerBtn').addEventListener('click', () => {
+            alert("Touch events processing within immersive frame parameters.");
+        });
+    </script>
+    
+</body>
+</html>
